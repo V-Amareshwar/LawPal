@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/auth/:path*",
+      "destination": "https://lawpal-3.onrender.com/auth/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://sainathsurya-lawpal.hf.space/:path*"
+    }
+  ]
+}

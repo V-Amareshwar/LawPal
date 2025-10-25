@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Mobile-first optimizations */
+@layer base {
+  html, body {
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: static;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  #root {
+    width: 100%;
+    min-height: 100vh;
+    height: auto;
+    overflow: visible;
+  }
+  
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Light theme color overrides */
+  html:not(.dark) {
+    --color-bg-main: #ffffff;
+    --color-bg-sidebar: #f5f5f5;
+    --color-bg-icon-bar: #f0f0f0;
+    --color-bg-input: #e8e8e8;
+    --color-border-color: #d0d0d0;
+    --color-accent: #e0e0e0;
+    --color-accent-selected: #d5d5d5;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #666666;
+  }
+
+  /* Apply light theme colors */
+  html:not(.dark) .bg-bg-main { background-color: var(--color-bg-main) !important; }
+  html:not(.dark) .bg-bg-sidebar { background-color: var(--color-bg-sidebar) !important; }
+  html:not(.dark) .bg-bg-icon-bar { background-color: var(--color-bg-icon-bar) !important; }
+  html:not(.dark) .bg-bg-input { background-color: var(--color-bg-input) !important; }
+  html:not(.dark) .border-border-color { border-color: var(--color-border-color) !important; }
+  html:not(.dark) .bg-accent { background-color: var(--color-accent) !important; }
+  html:not(.dark) .bg-accent-selected { background-color: var(--color-accent-selected) !important; }
+  html:not(.dark) .text-text-primary { color: var(--color-text-primary) !important; }
+  html:not(.dark) .text-text-secondary { color: var(--color-text-secondary) !important; }
+}
+
+/* Custom scrollbar to match the theme */
+.dark ::-webkit-scrollbar { width: 6px; }
+.dark ::-webkit-scrollbar-track { background: #2b2d31; }
+.dark ::-webkit-scrollbar-thumb { background: #404349; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #53565c; }
+
+:not(.dark) ::-webkit-scrollbar { width: 6px; }
+:not(.dark) ::-webkit-scrollbar-track { background: #f5f5f5; }
+:not(.dark) ::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 3px; }
+:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #b0b0b0; }
+
+/* Animation for new messages */
+@layer components {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+  }
+  .animate-toast-exit {
+    animation: toastExit 0.4s ease-in forwards;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Unique exit animation for toasts: slight slide, fade, and scale */
+@keyframes toastExit {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0px);
+  }
+  60% {
+    opacity: 0.4;
+    transform: translateX(8px) scale(0.98);
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(18px) scale(0.96);
+    filter: blur(2px);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Blob animation for auth pages */
+@keyframes blob {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(20px, -50px) scale(1.1);
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  75% {
+    transform: translate(50px, 50px) scale(1.05);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Custom scrollbar styles for auth pages */
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thumb-purple-500\/50::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.5);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thumb-purple-500\/50::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.7);
+  }
+  
+  .scrollbar-thumb-blue-500\/50::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.5);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thumb-blue-500\/50::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.7);
+  }
+  
+  .scrollbar-track-transparent::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
