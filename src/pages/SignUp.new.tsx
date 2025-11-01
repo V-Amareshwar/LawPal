@@ -358,10 +358,33 @@ export default function SignUp() {
               </p>
 
               <div className="flex flex-col items-center gap-2 text-xs text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>Waiting for verification...</span>
-                </div>
+                {verificationToken ? (
+                  // If we have a token (from URL), show verify button
+                  <button
+                    type="button"
+                    onClick={handleVerifyEmail}
+                    disabled={isLoading}
+                    className="w-full py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Verifying...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Verify Email</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  // If no token yet, show waiting message
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    <span>Waiting for verification...</span>
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={handleResend}

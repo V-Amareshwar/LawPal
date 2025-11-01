@@ -57,7 +57,9 @@ router.post('/signup', async (req, res) => {
       existingUser.name = name; // allow updating name before verification
       await existingUser.save();
 
-      const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+      // Get first URL from comma-separated FRONTEND_URL (for CORS it has multiple, but we only need one for links)
+      const frontendUrls = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',');
+      const FRONTEND_URL = frontendUrls[0].trim(); // Use first URL (production)
       const verifyLink = `${FRONTEND_URL}/#/signup?token=${verificationToken}`;
       console.log('📧 Attempting to resend verification email to:', existingUser.email);
       try {
@@ -94,7 +96,9 @@ router.post('/signup', async (req, res) => {
 
     await user.save();
 
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    // Get first URL from comma-separated FRONTEND_URL (for CORS it has multiple, but we only need one for links)
+    const frontendUrls = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',');
+    const FRONTEND_URL = frontendUrls[0].trim(); // Use first URL (production)
     const verifyLink = `${FRONTEND_URL}/#/signup?token=${verificationToken}`;
     console.log('📧 Attempting to send verification email to:', user.email);
     try {
@@ -393,7 +397,8 @@ router.post('/forgot-password', async (req, res) => {
     await user.save();
 
     // TODO: Send reset email
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrls = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',');
+    const FRONTEND_URL = frontendUrls[0].trim();
     const resetLink = `${FRONTEND_URL}/#/reset-password?token=${resetToken}`;
     try {
       await sendPasswordResetEmail(user.email, resetLink);

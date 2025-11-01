@@ -1,83 +1,61 @@
-import nodemailer from 'nodemailer';
+// SendGrid email service using HTTPS API (best for production)
+// Uses fetch API - no extra dependencies needed!
 
-async function getTransporter() {
-  // Option 1: SendGrid (Recommended for production)
-  // Set SENDGRID_API_KEY in Render environment
+async function sendEmailViaSendGridAPI(to: string, subject: string, html: string) {
+  // Read env variables inside the function (after dotenv.config() has run)
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+  const MAIL_FROM = process.env.MAIL_FROM || 'LawPal <no-reply@lawpal.app>';
   
-  if (SENDGRID_API_KEY) {
-    // Use SendGrid via SMTP relay (no extra package needed!)
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.sendgrid.net',
-      port: 587,
-      secure: false, // TLS
-      auth: {
-        user: 'apikey', // This is literal string 'apikey'
-        pass: SENDGRID_API_KEY, // Your actual SendGrid API key
+  if (!SENDGRID_API_KEY) {
+    console.error('❌ SENDGRID_API_KEY environment variable not set!');
+    console.error('Current env keys:', Object.keys(process.env).filter(k => k.includes('SEND')));
+    throw new Error('SENDGRID_API_KEY not configured');
+  }
+
+  console.log('📧 Sending email via SendGrid HTTPS API');
+  console.log('📬 To:', to);
+  console.log('📝 Subject:', subject);
+  console.log('🔑 API Key present:', SENDGRID_API_KEY.substring(0, 10) + '...');
+
+  const payload = {
+    personalizations: [
+      {
+        to: [{ email: to }],
+        subject: subject,
       },
-    });
-    console.log('📧 Using SendGrid SMTP transport');
-    try {
-      await transporter.verify();
-      console.log('✅ SendGrid connection verified successfully');
-    } catch (err: any) {
-      console.error('❌ SendGrid verify failed:', err?.message || err);
-      throw err;
-    }
-    return transporter;
-  }
-
-  // Option 2: Gmail SMTP (Fallback - may timeout on free tier)
-  const SMTP_HOST = process.env.SMTP_HOST;
-  const SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
-  const SMTP_USER = process.env.SMTP_USER;
-  const SMTP_PASS = process.env.SMTP_PASS;
-  const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
-
-  if (SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS) {
-    if (SMTP_HOST.includes('gmail') && /\s/.test(SMTP_PASS)) {
-      console.warn('⚠️ SMTP_PASS contains spaces but Gmail App Passwords must be 16 characters without spaces. Remove spaces in your .env SMTP_PASS.');
-    }
-    const transporter = nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_SECURE,
-      auth: { user: SMTP_USER, pass: SMTP_PASS },
-    });
-    console.log(`📧 Using SMTP transport: host=${SMTP_HOST} port=${SMTP_PORT} secure=${SMTP_SECURE} user=${SMTP_USER}`);
-    try {
-      await transporter.verify();
-      console.log('✅ SMTP connection verified successfully');
-    } catch (err: any) {
-      console.error('❌ SMTP verify failed:', err?.message || err);
-      throw err;
-    }
-    return transporter;
-  }
-
-  // Option 3: Development test account
-  if (process.env.NODE_ENV !== 'production') {
-    const testAccount = await nodemailer.createTestAccount();
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
+    ],
+    from: { 
+      email: MAIL_FROM.match(/<(.+)>/)?.[1] || MAIL_FROM, // Extract email from "Name <email>"
+      name: MAIL_FROM.match(/^([^<]+)</)?.[1]?.trim() || 'LawPal',
+    },
+    content: [
+      {
+        type: 'text/html',
+        value: html,
       },
-    });
-    console.warn('⚠️ Using Nodemailer test account (emails will NOT be delivered to real inboxes). A preview URL will be printed below.');
-    return transporter;
+    ],
+  };
+
+  const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ SendGrid API error:', response.status, errorText);
+    throw new Error(`SendGrid API failed: ${response.status} - ${errorText}`);
   }
 
-  throw new Error('Email service not configured. Set SENDGRID_API_KEY or SMTP credentials in .env');
+  console.log('✅ Email sent successfully via SendGrid HTTPS API');
+  return response;
 }
 
 export async function sendVerificationEmail(to: string, link: string) {
-  const transporter = await getTransporter();
-  const MAIL_FROM = process.env.MAIL_FROM || 'LawPal <no-reply@lawpal.app>';
-
   const html = `
   <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111">
     <h2>Verify your email</h2>
@@ -90,20 +68,10 @@ export async function sendVerificationEmail(to: string, link: string) {
     <p style="color:#666">If you didn't request this, you can ignore this email.</p>
   </div>`;
 
-  const info = await transporter.sendMail({
-    from: MAIL_FROM,
-    to,
-    subject: 'Verify your LawPal account',
-    html,
-  });
-  const preview = nodemailer.getTestMessageUrl(info);
-  if (preview) console.log('🔗 Email preview URL:', preview);
+  await sendEmailViaSendGridAPI(to, 'Verify your LawPal account', html);
 }
 
 export async function sendPasswordResetEmail(to: string, link: string) {
-  const transporter = await getTransporter();
-  const MAIL_FROM = process.env.MAIL_FROM || 'LawPal <no-reply@lawpal.app>';
-
   const html = `
   <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111">
     <h2>Reset your password</h2>
@@ -116,12 +84,5 @@ export async function sendPasswordResetEmail(to: string, link: string) {
     <p style="color:#666">If you didn't request this, you can ignore this email.</p>
   </div>`;
 
-  const info = await transporter.sendMail({
-    from: MAIL_FROM,
-    to,
-    subject: 'Reset your LawPal password',
-    html,
-  });
-  const preview = nodemailer.getTestMessageUrl(info);
-  if (preview) console.log('🔗 Email preview URL:', preview);
+  await sendEmailViaSendGridAPI(to, 'Reset your LawPal password', html);
 }
