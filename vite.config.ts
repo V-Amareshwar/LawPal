@@ -8,7 +8,7 @@ export default defineConfig(() => {
   const localBackend = 'http://localhost:5000'  // ← CHANGED to localhost!
   
   // For Colab ngrok backend (uncomment and update when using Colab)
-  const colabTarget = 'https://sainathsurya-lawpal.hf.space'
+  const colabTarget = 'https://85912fa2d618.ngrok-free.app'
 
   return {
     plugins: [react()],
